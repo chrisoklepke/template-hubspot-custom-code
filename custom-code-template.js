@@ -1,3 +1,5 @@
+// This is a template for developing and testing Custom Code Workflow Actions locally. This includes dotenv and the payload of an action which both are not needed to be included in the final action when deploying in HubSpot.
+
 require("dotenv").config();
 const hubspot = require("@hubspot/api-client");
 
@@ -16,7 +18,7 @@ exports.main = async (event, callback) => {
       ["phone"],
     );
     phone = ApiResponse.properties.phone;
-    console.log(phone)
+    console.log(phone);
   } catch (err) {
     console.error(err);
     // We will automatically retry when the code fails because of a rate limiting error from the HubSpot API.
