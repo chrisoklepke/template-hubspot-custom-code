@@ -18,7 +18,7 @@ exports.main = async (event, callback) => {
     phone = apiResponse.properties.phone;
     console.log("Fetched phone:", phone);
   } catch (err) {
-    console.error("Error fetching contact:", err.response?.body || err);
+    console.error(err.response?.body || err);
     // HubSpot may retry automatically on certain errors; rethrow to fail the action.
     throw err;
   }
