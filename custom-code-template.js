@@ -1,6 +1,3 @@
-// This is a template for developing and testing Custom Code Workflow Actions locally. This includes dotenv and the payload of an action which both are not needed to be included in the final action when deploying in HubSpot.
-
-require("dotenv").config();
 const hubspot = require("@hubspot/api-client");
 
 exports.main = async (event, callback) => {
@@ -13,15 +10,16 @@ exports.main = async (event, callback) => {
   let phone;
 
   try {
-    const ApiResponse = await hubspotClient.crm.contacts.basicApi.getById(
+    const apiResponse = await hubspotClient.crm.contacts.basicApi.getById(
       event.object.objectId,
       ["phone"],
     );
-    phone = ApiResponse.properties.phone;
-    console.log(phone);
+
+    phone = apiResponse.properties.phone;
+    console.log("Fetched phone:", phone);
   } catch (err) {
-    console.error(err);
-    // We will automatically retry when the code fails because of a rate limiting error from the HubSpot API.
+    console.error("Error fetching contact:", err.response?.body || err);
+    // HubSpot may retry automatically on certain errors; rethrow to fail the action.
     throw err;
   }
 
@@ -33,27 +31,28 @@ exports.main = async (event, callback) => {
   });
 };
 
-const payload = {
-  origin: {
-    // Your portal ID
-    portalId: 1,
+// ---------------- LOCAL TEST HARNESS ----------------
+// This block runs ONLY when you execute the file directly (e.g. `node action.js`).
+// It will NOT run when HubSpot loads your code, because HubSpot doesn't execute the file as the "main" module.
+if (require.main === module) {
+  require("dotenv").config();
 
-    // Your custom action definition ID
-    actionDefinitionId: 2,
-  },
-  object: {
-    // The type of CRM object that is enrolled in the workflow
-    objectType: "CONTACT",
+  const payload = {
+    origin: {
+      portalId: 1,
+      actionDefinitionId: 2,
+    },
+    object: {
+      objectType: "CONTACT",
+      objectId: 101,
+    },
+    inputFields: {
+      email: "john.doe@gmail.com",
+    },
+    callbackId: "ap-123-456-7-8",
+  };
 
-    // The ID of the CRM object that is enrolled in the workflow
-    objectId: 101,
-  },
-  inputFields: {
-    // The property name for defined inputs
-    email: "john.doe@gmail.com",
-  },
-  // A unique ID for this execution
-  callbackId: "ap-123-456-7-8",
-};
-
-exports.main(payload, (result) => console.log(result));
+  exports.main(payload, (result) => {
+    console.log("Local callback result:", result);
+  });
+}
